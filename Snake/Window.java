@@ -83,7 +83,7 @@ public class Window extends JFrame {
             while (true) {
 
                 long now = System.nanoTime();
-                elapsedTime += ((now - lastTime) / 1_000_000_000.0) * FPS;
+                elapsedTime += ((now - lastTime) / 2_000_000_000.0) * FPS;
                 lastTime = System.nanoTime();
 
                 if (elapsedTime >= 1) {

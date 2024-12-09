@@ -1,179 +1,63 @@
-import java.util.ArrayList;
-import java.util.Iterator;
+import java.util.LinkedList;
 
-/**
- * Contains a list of Square objects that represent the snake.
- * <br/>
- * The snake moves by taking the last square on its tail and
- * inserting it in front of the head, in the direction that
- * it is going, then deleting the tail.
- */
-class Snake implements Iterable<Square> {
+public class Snake {
+    private LinkedList<Square> body;
+    private Direction direction;
 
-    private ArrayList<Square> snakeList;
-    private int size = 1;
-    private Square tail;
-
-    /**
-     * Construct the snake and places it in the center of the screen.
-     */
-    Snake () {
-        this(Properties.START_X, Properties.START_Y);
+    public Snake() {
+        body = new LinkedList<>();
+        body.add(new Square(5, 5));
+        body.add(new Square(5, 4));
+        body.add(new Square(5, 3));
+        direction = Direction.RIGHT;
     }
 
-    /**
-     * Construct the snake and place it at the specified location.
-     * @param startX    the x coordinate of the location
-     * @param startY    the y coordinate of the location
-     */
-    Snake (int startX, int startY) {
-        snakeList = new ArrayList<>();
-        snakeList.add(new Square(Square.Entity.Snake, startX, startY));
+    public Square getHead() {
+        return body.getFirst();
     }
 
-    /**
-     * Get the size of the snake.
-     * @return          size of the snake
-     */
-    int getSize () {
-        return size;
+    public int getSize() {
+        return body.size();
     }
 
-    /**
-     * Direction the Snake left one Square.
-     * @return  true if the Snake did not collide with itself
-     */
-    boolean moveLeft () {
-        return move(Direction.LEFT);
-    }
+    public boolean move(int xOffset, int yOffset) {
+        Square head = getHead();
+        int oldX = head.getX();
+        int oldY = head.getY();
+        Square newHead = new Square(oldX + xOffset, oldY + yOffset);
 
-    /**
-     * Direction the Snake right one Square.
-     * @return  true if the Snake did not collide with itself
-     */
-    boolean moveRight () {
-        return move(Direction.RIGHT);
-    }
+        if (contains(newHead)) return false;
 
-    /**
-     * Direction the Snake up one Square.
-     * @return  true if the Snake did not collide with itself
-     */
-    boolean moveUp () {
-        return move(Direction.UP);
-    }
-
-    /**
-     * Direction the Snake down one Square.
-     * @return  true if the Snake did not collide with itself
-     */
-    boolean moveDown () {
-        return move(Direction.DOWN);
-    }
-
-    /**
-     * Direction the Snake in the specified direction.
-     * @param direction  the direction to direction the Snake.
-     * @return      true if the Snake did not collide with itself
-     */
-    private synchronized boolean move (Direction direction) {
-
-        int xOffset = 0;
-        int yOffset = 0;
-
-        if (direction == Direction.LEFT) {
-            xOffset = -1;
-        } else if (direction == Direction.RIGHT) {
-            xOffset = 1;
-        } else if (direction == Direction.UP) {
-            yOffset = -1;
-        } else if (direction == Direction.DOWN) {
-            yOffset = 1;
-        }
-
-        // Get a reference to the current head and get its coordinates.
-        Square currentHead = getHead();
-        int oldX = currentHead.getX();
-        int oldY = currentHead.getY();
-
-        // Create a new head, relative to the old one, in the appropriate direction.
-        Square head = new Square(Square.Entity.Snake, oldX + xOffset, oldY + yOffset);
-
-        if (contains(head)) return false; // If snake collided with itself.
-        snakeList.add(0, head); // Add the new head if no collision.
+        body.addFirst(newHead);
         removeTail();
-
         return true;
     }
 
-    private synchronized void removeTail () {
-
-        tail = snakeList.get(snakeList.size() - 1);
-
-        if (snakeList.size() > size) {
-            snakeList.remove(snakeList.size() - 1);
-        }
-    }
-
-    /**
-     * Get the last Square in the Snake.
-     * @return  the tail of the Snake
-     */
-    Square getTail () {
-        return tail; // The most recent square the snake was on that it is not on now.
-    }
-
-    /**
-     * Get the first Square in the Snake.
-     * @return  the head of the Snake
-     */
-    Square getHead () {
-        return snakeList.get(0);
-    }
-
-    /**
-     * Grows the snake by one tile.
-     */
-    void grow () {
-        size++;
-    }
-
-    /**
-     * Grows the snake by a specified number of tiles.
-     * @param x     the number of tiles to grow the snake by
-     */
-    public void grow (int x) {
-        size += x;
-    }
-
-    public synchronized Iterator<Square> iterator () {
-        return snakeList.iterator();
-    }
-
-    /**
-     * Check to see if the Snake contains a particular Square (if it is on a Square)
-     * @param sq    the specified Square to check for
-     * @return      true if the Square is part of the Snake
-     */
-    boolean contains (Square sq) {
-        for (Square element : this) {
-            if (element.equals(sq)) {
+    private boolean contains(Square square) {
+        for (Square segment : body) {
+            if (segment.equals(square)) {
                 return true;
             }
         }
         return false;
     }
 
-    @Override
-    public String toString () {
-        StringBuilder sb = new StringBuilder();
-
-        for (Square sq : this) {
-            sb.append(sq);
-            sb.append("\n");
-        }
-
-        return new String(sb);
+    private void removeTail() {
+        body.removeLast();
     }
 
+    public void grow() {
+        Square tail = body.getLast();
+        body.addLast(new Square(tail.getX(), tail.getY()));
+    }
+
+    public boolean hasCollidedWithSelf() {
+        Square head = getHead();
+        for (int i = 1; i < body.size(); i++) {
+            if (body.get(i).equals(head)) {
+                return true;
+            }
+        }
+        return false;
+    }
 }
